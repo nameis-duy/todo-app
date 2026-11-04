@@ -1,0 +1,166 @@
+@baseUrl = http://localhost:5080
+@taskId = REPLACE_WITH_CREATED_TASK_ID
+@version = REPLACE_WITH_LATEST_RESPONSE_VERSION
+@purposeId = REPLACE_WITH_CREATED_PURPOSE_ID
+@purposeVersion = REPLACE_WITH_LATEST_PURPOSE_VERSION
+@recipientId = REPLACE_WITH_REGISTERED_RECIPIENT_ID
+@csrfToken = {{$processEnv TODO_CSRF_TOKEN}}
+@accountEmail = {{$processEnv TODO_ACCOUNT_EMAIL}}
+@accountPassword = {{$processEnv TODO_ACCOUNT_PASSWORD}}
+
+# Use a client that retains cookies. Set credentials/tokens outside this file.
+# Fetch csrf, use the XSRF-TOKEN cookie as TODO_CSRF_TOKEN, then login/register.
+# Fetch csrf again after guest/login/register/logout before the next mutation.
+
+### Initialize/refresh CSRF cookie (anonymous or signed in)
+GET {{baseUrl}}/api/auth/csrf
+
+### Start/resume a private guest (retain both HttpOnly cookies; SQL is required)
+POST {{baseUrl}}/api/auth/guest
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{}
+
+### After signing in, explicitly add this browser's guest data to the account
+# Refresh CSRF after sign-in. No guest/target IDs are accepted; existing data is kept.
+# Not now means do not call this endpoint. Recovery cookie expires after eight hours.
+POST {{baseUrl}}/api/auth/guest-sync
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{}
+
+### Register (requires an anonymous CSRF token)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "email": "{{accountEmail}}", "password": "{{accountPassword}}" }
+
+### Sign in (retain the returned HttpOnly session cookie)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "email": "{{accountEmail}}", "password": "{{accountPassword}}" }
+
+### Current account
+GET {{baseUrl}}/api/auth/me
+
+### Sign out
+POST {{baseUrl}}/api/auth/logout
+X-XSRF-TOKEN: {{csrfToken}}
+
+### Process liveness (not database readiness)
+GET {{baseUrl}}/health/live
+
+### OpenAPI (Development only)
+GET {{baseUrl}}/openapi/v1.json
+
+### Create
+POST {{baseUrl}}/api/tasks
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{
+  "title": "Build the Todo backend",
+  "description": "Implement the first working task slice",
+  "status": "InProgress",
+  "priority": "High",
+  "startDate": "2026-10-22",
+  "dueDate": "2026-10-30"
+}
+
+### Query
+GET {{baseUrl}}/api/tasks?search=backend&status=InProgress&sortBy=priority&descending=true&page=1&pageSize=20
+
+### Read
+GET {{baseUrl}}/api/tasks/{{taskId}}
+
+### Replace (refresh version after every mutation)
+PUT {{baseUrl}}/api/tasks/{{taskId}}
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{
+  "title": "Finish the Todo backend",
+  "description": "Apply the database migration locally",
+  "status": "InProgress",
+  "priority": "High",
+  "startDate": "2026-10-22",
+  "dueDate": "2026-10-30",
+  "version": "{{version}}"
+}
+
+### Complete (set completed to false to reopen as Pending)
+PATCH {{baseUrl}}/api/tasks/{{taskId}}/completion
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{
+  "completed": true,
+  "version": "{{version}}"
+}
+
+### Delete permanently using the latest version
+DELETE {{baseUrl}}/api/tasks/{{taskId}}?version={{version}}
+X-XSRF-TOKEN: {{csrfToken}}
+
+### Create purpose (empty progress starts at 0%)
+POST {{baseUrl}}/api/purposes
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "title": "Ship the Todo app", "description": "A reliable local task workspace" }
+
+### List purpose summaries
+GET {{baseUrl}}/api/purposes?page=1&pageSize=20
+
+### Purpose details summary
+GET {{baseUrl}}/api/purposes/{{purposeId}}
+
+### Related tasks
+GET {{baseUrl}}/api/tasks?purposeId={{purposeId}}&page=1&pageSize=20
+
+### Uncategorized tasks
+GET {{baseUrl}}/api/tasks?uncategorized=true
+
+### Assign a new task
+POST {{baseUrl}}/api/tasks
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "title": "Finish purpose grouping", "purposeId": "{{purposeId}}", "priority": "High" }
+
+### Update purpose (use latest purpose version)
+PUT {{baseUrl}}/api/purposes/{{purposeId}}
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "title": "Ship Todo", "description": null, "version": "{{purposeVersion}}" }
+
+### Remove task purpose (PUT replaces all editable fields)
+PUT {{baseUrl}}/api/tasks/{{taskId}}
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "title": "Finish purpose grouping", "purposeId": null, "status": "Pending", "priority": "High", "version": "{{version}}" }
+
+### Delete purpose, preserving all tasks as uncategorized
+DELETE {{baseUrl}}/api/purposes/{{purposeId}}?version={{purposeVersion}}
+X-XSRF-TOKEN: {{csrfToken}}
+
+### List access (task owner only)
+GET {{baseUrl}}/api/tasks/{{taskId}}/shares
+
+### Share with a registered account (owner only, false=view and true=edit)
+PUT {{baseUrl}}/api/tasks/{{taskId}}/shares
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{ "email": "recipient@example.invalid", "canEdit": false }
+
+### Revoke recipient access (owner only)
+DELETE {{baseUrl}}/api/tasks/{{taskId}}/shares/{{recipientId}}
+X-XSRF-TOKEN: {{csrfToken}}

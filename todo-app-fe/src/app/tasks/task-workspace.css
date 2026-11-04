@@ -1,0 +1,66 @@
+:host { display: block; }
+.skip-link { position: fixed; top: -60px; left: 16px; padding: 12px; z-index: 10; background: var(--surface); }
+.skip-link:focus { top: 8px; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); }
+.topbar-inner, .workspace { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+.topbar-inner { display: flex; align-items: center; gap: 24px; min-height: 48px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 22px; font-weight: 500; }
+.brand app-icon { width: 24px; height: 24px; color: var(--accent); }
+.brand-period { margin-left: -8px; color: var(--accent); }
+.workspace-name, .today { color: var(--muted); font-size: 12px; }
+.workspace-name { border-left: 1px solid var(--control); padding-left: 24px; }
+.today { margin-left: auto; }
+.workspace { padding-block: 48px 24px; }
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; padding: 20px 24px; background: var(--primary); color: var(--surface); }
+.title-row > div { min-width: 0; }
+.title-row h1 { font-size: 28px; font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+.title-row > .primary { flex-shrink: 0; min-height: 44px; padding-inline: 20px; font-weight: 600; }
+.title-row > .primary:not(:disabled) { background: var(--surface); color: var(--primary); }
+.title-row > .primary:hover:not(:disabled) { background: var(--accent-soft); }
+.title-row > .primary:focus-visible { outline-color: var(--surface); }
+.title-row .subtitle { color: var(--accent-soft); overflow-wrap: anywhere; }
+.subtitle { margin-top: 8px; color: var(--muted); }
+.tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--border); }
+.tabs button { color: var(--muted); padding: 12px 0; border-radius: 0; border-bottom: 2px solid transparent; white-space: nowrap; min-height: 46px; font-weight: 400; }
+.tabs button:hover { background: transparent; color: var(--text); }
+.tabs button.active { border-bottom-color: var(--accent); color: var(--accent); font-weight: 500; }
+.toolbar { display: flex; gap: var(--gap); margin-block: 24px; align-items: center; }
+.search { display: flex; position: relative; align-items: center; width: 320px; margin-right: auto; }
+.search app-icon { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
+.search input { width: 100%; padding-left: 40px; }
+.sort-group { display: flex; align-items: center; gap: 4px; }
+.sort-group select { width: 150px; }
+.filters-button[aria-expanded='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.filter-count { font-size: 12px; color: var(--accent); }
+.filter-panel { display: flex; align-items: end; gap: var(--gap); padding-bottom: 24px; flex-wrap: wrap; }
+.filter-panel label { display: grid; gap: 8px; font-size: 12px; flex: 1 1 150px; }
+.feedback:empty { display: none; }
+.feedback p { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.success { color: var(--positive); }
+.error { color: var(--negative); }
+h2 { font-size: 16px; font-weight: 500; }
+.workspace-footer { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; margin-top: 20px; }
+@media (max-width: 800px) {
+  .workspace { padding-top: 32px; }
+}
+@media (max-width: 600px) {
+  .topbar-inner, .workspace { width: calc(100% - 32px); }
+  .topbar-inner { min-height: 56px; gap: 16px; }
+  .workspace-name { margin-left: auto; padding-left: 16px; }
+  .today { display: none; }
+  .workspace { padding-top: 28px; }
+  .title-row { margin-bottom: 20px; padding: 16px; gap: 12px; }
+  .title-row h1 { font-size: 24px; }
+  .title-row > .primary { padding-inline: 12px; }
+  .subtitle { font-size: 14px; }
+  .tabs { gap: 20px; overflow-x: auto; }
+  .tabs button { font-size: 14px; }
+  .toolbar { flex-wrap: wrap; gap: 8px; margin-block: 16px; }
+  .search { width: auto; flex: 1 1 180px; }
+  .sort-group { margin-left: auto; }
+  .refresh { order: 3; }
+  .sort-group select { width: 142px; }
+  button, button.icon-button, input, select { min-height: 44px; }
+  .filter-panel { gap: 12px; }
+  .filter-panel label { flex-basis: 140px; }
+}

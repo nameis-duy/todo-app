@@ -1,0 +1,30 @@
+.editor { border: 0; margin: 0 0 0 auto; padding: 0; width: min(520px, 100%); height: 100dvh; max-height: 100dvh; max-width: 100%; color: var(--text); background: var(--surface); overflow-y: auto; }
+.editor::backdrop { background: rgb(0 0 0 / 24%); }
+.editor-header { display: flex; justify-content: space-between; gap: 16px; padding: 28px 28px 24px; border-bottom: 1px solid var(--border); }
+.editor-header h2 { font-size: 20px; }
+.editor-header p { color: var(--muted); margin-top: 6px; }
+.editor form { padding: 24px 28px; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+fieldset label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+fieldset input, fieldset select, fieldset textarea { display: block; width: 100%; min-height: 40px; }
+.optional { color: var(--muted); font-size: 12px; }
+.field-error { display: grid; gap: 4px; color: var(--negative); font-size: 12px; margin-top: 4px; margin-bottom: 20px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.form-grid .field-error { margin-bottom: 16px; }
+.audit { border-top: 1px solid var(--border); padding-top: 16px; margin: 0 0 24px; font-size: 12px; color: var(--muted); }
+.audit > div { display: flex; gap: 12px; justify-content: space-between; margin-top: 8px; }
+.audit dd { margin: 0; text-align: right; }
+.editor-actions { display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; }
+.cancel-button { margin-left: auto; }
+.delete-button { color: var(--negative); }
+.editor-error { padding: 16px 28px; color: var(--negative); border-bottom: 1px solid var(--border); }
+.editor-error p + p, .editor-error button { margin-top: 12px; }
+.editor-loading { display: flex; align-items: center; gap: 8px; padding: 28px; }
+.delete-confirm { background: var(--negative-bg); padding: 16px; margin-bottom: 20px; border-radius: var(--radius); overflow-wrap: anywhere; }
+.delete-confirm > div { display: flex; justify-content: end; gap: 8px; margin-top: 16px; }
+button.danger { color: var(--surface); background: var(--negative); }
+@media (max-width: 600px) {
+  .editor-header { padding: 20px; }
+  .editor form { padding: 20px; }
+  .editor-error { padding: 16px 20px; }
+}

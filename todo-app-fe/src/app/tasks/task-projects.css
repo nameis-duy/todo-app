@@ -1,0 +1,23 @@
+.topbar-inner, .workspace { width: min(1280px, calc(100% - 48px)); }
+.workspace-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; align-items: start; }
+.project-sidebar { min-width: 0; padding-right: 16px; border-right: 1px solid var(--border); }
+.task-content { min-width: 0; }
+.project-toggle { display: none; }
+.purpose-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block: -16px 24px; font-size: 12px; color: var(--muted); }
+.purpose-summary progress { width: 120px; height: 6px; border: none; border-radius: 4px; overflow: hidden; accent-color: var(--positive); }
+.purpose-summary progress::-webkit-progress-bar { background: var(--border); }
+.purpose-summary progress::-webkit-progress-value { background: var(--positive); }
+.purpose-summary progress::-moz-progress-bar { background: var(--positive); }
+.purpose-summary strong { font-weight: 500; }
+.purpose-summary .icon-button { margin-left: auto; }
+@media (max-width: 1100px) {
+  .workspace-shell { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .project-sidebar { border: none; padding: 0; }
+  .project-toggle { display: inline-flex; }
+}
+@media (max-width: 600px) {
+  .topbar-inner, .workspace { width: calc(100% - 32px); }
+  .workspace-name { border: none; padding: 0; }
+  .workspace-shell { gap: 16px; padding-top: 16px; }
+  .purpose-summary { margin-top: -8px; gap: 8px; }
+}

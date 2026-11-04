@@ -1,0 +1,226 @@
+<a class="skip-link" href="#tasks">Skip to tasks</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/" aria-label="Todo home"><app-icon name="CheckCheck" />Todo<span class="brand-period">.</span></a>
+    <span class="workspace-name">{{ auth.user()?.isGuest ? 'Guest workspace' : 'Personal workspace' }}</span>
+    <span class="today">{{ store.updatedAt() | date: 'EEEE, MMM d' }}</span>
+    <span class="account-email" [title]="auth.user()?.isGuest ? 'Guest session' : auth.user()?.email">{{ auth.user()?.isGuest ? 'Guest' : auth.user()?.email }}</span>
+    @if (auth.user()?.isGuest) {<button class="secondary" type="button" (click)="signIn()"><app-icon name="LogIn" />Sign in</button>}
+    @if (auth.user()?.hasGuestData && !guestSyncPrompt()) {<button class="icon-button" type="button" title="Sync guest data" aria-label="Sync guest data" (click)="guestSyncPrompt.set(true)"><app-icon name="CloudUpload" /></button>}
+    <button class="icon-button" type="button" [title]="auth.user()?.isGuest ? 'Leave guest session' : 'Sign out'" [attr.aria-label]="auth.user()?.isGuest ? 'Leave guest session' : 'Sign out'" [disabled]="signingOut() || guestSyncing()" (click)="logout()"><app-icon name="LogOut" /></button>
+  </div>
+</header>
+
+<main class="workspace workspace-shell">
+  <aside class="project-sidebar" [class.expanded]="projectsOpen()" aria-label="Project navigation">
+    <button class="secondary project-toggle" type="button" [attr.aria-expanded]="projectsOpen()" aria-controls="project-navigation" (click)="projectsOpen.set(!projectsOpen())"><app-icon name="ListTodo" />Projects<app-icon [name]="projectsOpen() ? 'ArrowUp' : 'ArrowDown'" /></button>
+    <div id="project-navigation"><app-purpose-workspace [activeId]="store.query().purposeId" [uncategorized]="store.query().uncategorized" [collapsed]="!projectsOpen()" (scopeChange)="setPurposeFilter($event)" (changed)="projectsChanged($event)" /></div>
+  </aside>
+  <section id="tasks" class="task-content" aria-label="Task workspace">
+  @if (auth.user()?.hasGuestData && !auth.user()?.isGuest && guestSyncPrompt()) {
+    <section class="guest-sync-prompt" aria-label="Pending guest data" [attr.aria-busy]="guestSyncing()">
+      <p>Add your guest tasks and projects to this account?</p>
+      <button class="secondary" type="button" [disabled]="guestSyncing()" (click)="syncGuestData()"><app-icon [name]="guestSyncing() ? 'LoaderCircle' : 'CloudUpload'" />{{ guestSyncing() ? 'Syncing...' : 'Sync guest data' }}</button>
+      <button class="text-button" type="button" [disabled]="guestSyncing()" (click)="guestSyncPrompt.set(false)">Not now</button>
+      @if (guestSyncError()) {<p class="error" role="alert">{{ guestSyncError() }}</p>}
+    </section>
+  }
+  <div class="title-row">
+    <div>
+      <h1>{{ currentPurpose()?.title || (store.query().uncategorized ? 'No project' : 'All tasks') }}</h1>
+      @if (currentPurpose()?.description) {<p class="subtitle">{{ currentPurpose()?.description }}</p>}
+    </div>
+    <button class="primary" type="button" (click)="openTask()"><app-icon name="Plus" />New task</button>
+  </div>
+
+  @if (currentPurpose(); as purpose) {
+    <div class="purpose-summary"><span>{{ purpose.completedTasks }} of {{ purpose.totalTasks }} tasks completed</span>
+      <progress max="100" [value]="purpose.completionPercentage" [attr.aria-label]="purpose.title + ' completion'"></progress>
+      <strong>{{ purpose.completionPercentage | number: '1.0-1' }}%</strong><button class="icon-button" type="button" title="Edit project" aria-label="Edit project" (click)="editProject()"><app-icon name="Pencil" /></button></div>
+  }
+  @if (purposeError()) {<p class="error" role="alert">Projects couldn't load. {{ purposeError() }} <button class="text-button" type="button" (click)="loadPurposes()">Retry</button></p>}
+  @if (store.query().purposeId && !currentPurpose() && !purposesLoading() && !purposeError()) {<p class="error" role="alert">This project no longer exists. <button class="text-button" type="button" (click)="setPurposeFilter('')">All tasks</button></p>}
+
+  <nav class="tabs" aria-label="Task status">
+    @for (tab of tabs; track tab.label) {
+      <button type="button" [class.active]="store.query().status === tab.status"
+        [attr.aria-pressed]="store.query().status === tab.status" (click)="filter({ status: tab.status })">
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <div class="toolbar">
+    <label class="search"><app-icon name="Search" /><span class="sr-only">Search tasks</span>
+      <input #searchInput type="search" placeholder="Search tasks" [value]="search()" (input)="onSearch(searchInput.value)" />
+    </label>
+    <button class="secondary filters-button" type="button" [attr.aria-expanded]="filtersOpen()"
+      aria-controls="task-filters" (click)="filtersOpen.set(!filtersOpen())">
+      <app-icon name="SlidersHorizontal" />Filters@if (activeFilters()) {<span class="filter-count">{{ activeFilters() }}</span>}
+    </button>
+    <div class="sort-group">
+      <label class="sr-only" for="sort">Sort tasks</label>
+      <select id="sort" #sort [value]="store.query().sortBy" (change)="setSort(sort.value)">
+        <option value="createdAt">Date created</option><option value="updatedAt">Last updated</option>
+        <option value="dueDate">Due date</option><option value="priority">Priority</option><option value="title">Title</option>
+      </select>
+      <button class="icon-button" type="button" [title]="store.query().descending ? 'Sort ascending' : 'Sort descending'"
+        [attr.aria-label]="store.query().descending ? 'Sort ascending' : 'Sort descending'"
+        (click)="filter({ descending: !store.query().descending })">
+        <app-icon [name]="store.query().descending ? 'ArrowDown' : 'ArrowUp'" />
+      </button>
+    </div>
+    <button class="icon-button refresh" title="Refresh tasks" aria-label="Refresh tasks" type="button"
+      [disabled]="store.loading()" (click)="store.refresh()"><app-icon name="RotateCw" /></button>
+  </div>
+
+  <div id="task-filters" class="filter-panel" [hidden]="!filtersOpen()">
+    <label>Priority<select #priority [value]="store.query().priority" (change)="setPriority(priority.value)">
+      <option value="">Any priority</option>@for (value of priorities; track value) {<option [value]="value">{{ value }}</option>}
+    </select></label>
+    <label>Due from<input #dueFrom type="date" [value]="store.query().dueFrom" [max]="store.query().dueTo"
+      (change)="filter({ dueFrom: dueFrom.value })" /></label>
+    <label>Due to<input #dueTo type="date" [value]="store.query().dueTo" [min]="store.query().dueFrom"
+      (change)="filter({ dueTo: dueTo.value })" /></label>
+    <button class="text-button" type="button" (click)="clearFilters()">Reset filters</button>
+  </div>
+
+  <div class="feedback" aria-live="polite" aria-atomic="true">
+    @if (notice()) {<p class="success"><app-icon name="Check" />{{ notice() }}</p>}
+    @if (actionError()) {<p class="error">{{ actionError() }} <button type="button" class="text-button" (click)="store.refresh()">Refresh</button></p>}
+  </div>
+
+  <section class="task-list" aria-label="Task results" [attr.aria-busy]="store.loading()">
+    <div class="list-heading">
+      <h2>{{ store.query().status ? statusLabel(store.query().status || 'Pending') : 'All tasks' }}
+        @if (store.page(); as page) {<span class="total">{{ page.totalCount | number }}</span>}
+      </h2>
+      <span class="list-caption">@if (store.loading()) {Updating...} @else if (store.updatedAt(); as updated) {Updated {{ updated | date: 'shortTime' }}}</span>
+    </div>
+    <div class="table-heading" aria-hidden="true"><span>Task</span><span>Priority</span><span>Due date</span><span></span></div>
+
+    @if (store.error()) {
+      <div class="empty-state" role="alert"><app-icon name="ListTodo" /><h3>Tasks couldn't load</h3>
+        <p>{{ store.error() }}</p><button type="button" class="secondary" (click)="store.refresh()"><app-icon name="RotateCw" />Try again</button>
+      </div>
+    } @else if (!store.page() && store.loading()) {
+      <div class="sr-only" role="status">Loading tasks</div>
+      @for (row of [1, 2, 3, 4]; track row) {
+        <div class="skeleton-row" aria-hidden="true"><span class="skeleton-circle"></span><div><span class="skeleton-line"></span><span class="skeleton-line short"></span></div></div>
+      }
+    } @else if (store.page()?.items?.length) {
+      @for (task of store.page()!.items; track task.id) {
+        <article class="task-row" [class.completed]="task.status === 'Completed'">
+          <div class="task-identity">
+            <button type="button" class="completion-button" [class.is-complete]="task.status === 'Completed'"
+              [disabled]="!!pendingTask() || store.loading() || !task.canEdit"
+              [attr.aria-label]="(task.status === 'Completed' ? 'Reopen ' : 'Complete ') + task.title"
+              [title]="task.status === 'Completed' ? 'Reopen task' : 'Complete task'" (click)="toggleCompletion(task)">
+              <app-icon [name]="pendingTask() === task.id ? 'LoaderCircle' : task.status === 'Completed' ? 'CircleCheck' : 'Circle'" />
+            </button>
+            <button type="button" class="task-name" (click)="openTask(task.id)">
+              <span class="task-title">{{ task.title }}</span>
+              <span class="task-subline"><span class="status-dot" [class.running]="task.status === 'InProgress'"></span>{{ statusLabel(task.status) }}
+                @if (task.description) {<span class="task-description">{{ task.description }}</span>}
+              </span>
+              <span class="task-purpose">{{ task.purposeTitle || (task.purposeId ? 'Shared project' : 'No project') }}@if (!task.isOwner) {<span> · Shared with you · {{ task.canEdit ? 'Can edit' : 'View only' }}</span>}</span>
+            </button>
+          </div>
+          <span class="priority" [class.urgent]="task.priority === 'Urgent'"><span class="priority-mark" [attr.data-priority]="task.priority"></span>{{ task.priority }}</span>
+          <span class="due-date" [class.overdue]="isOverdue(task)"><app-icon name="CalendarDays" />{{ dateLabel(task.dueDate) }}@if (isOverdue(task)) {<span class="sr-only">, overdue</span>}</span>
+          <button type="button" class="icon-button open-task" title="Open task" [attr.aria-label]="'Open ' + task.title" (click)="openTask(task.id)"><app-icon name="ChevronRight" /></button>
+        </article>
+      }
+    } @else {
+      <div class="empty-state"><app-icon name="ListTodo" /><h3>{{ store.query().search || store.query().status || activeFilters() ? 'No matching tasks' : 'Room for what matters' }}</h3>
+        <p>{{ store.query().search || store.query().status || activeFilters() ? 'No tasks match this view.' : 'No tasks yet.' }}</p>
+        @if (store.query().search || store.query().status || activeFilters()) {
+          <button class="secondary" type="button" (click)="clearFilters()">Clear filters</button>
+        } @else {<button class="secondary" type="button" (click)="openTask()"><app-icon name="Plus" />Create a task</button>}
+      </div>
+    }
+
+    @if (store.page()) {
+    <footer class="pagination">
+      <span>{{ rangeStart() | number }}-{{ rangeEnd() | number }} of {{ store.page()?.totalCount ?? 0 | number }}</span>
+      <label class="page-size">Per page<select #pageSize [value]="store.query().pageSize" (change)="filter({ pageSize: +pageSize.value })">
+        <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+      </select></label>
+      <div class="page-controls">
+        <button type="button" class="icon-button" title="Previous page" aria-label="Previous page" [disabled]="store.loading() || store.query().page <= 1" (click)="filter({ page: store.query().page - 1 })"><app-icon name="ChevronLeft" /></button>
+        <span>{{ store.query().page }} / {{ pageCount() | number }}</span>
+        <button type="button" class="icon-button" title="Next page" aria-label="Next page" [disabled]="store.loading() || store.query().page >= pageCount()" (click)="filter({ page: store.query().page + 1 })"><app-icon name="ChevronRight" /></button>
+      </div>
+    </footer>
+    }
+  </section>
+  <footer class="workspace-footer"><span>One task at a time.</span><span>Todo / Personal</span></footer>
+  </section>
+</main>
+
+<dialog #editor class="editor" closedby="any" aria-labelledby="editor-title" (cancel)="closeEditor($event)">
+  <div class="editor-header"><div><h2 id="editor-title">{{ selected() ? 'Task details' : 'New task' }}</h2>
+    <p>@if (selected() && !selected()!.isOwner) {Shared with you · {{ selected()!.canEdit ? 'Can edit' : 'View only' }}} @else {{{ selected() ? 'Make space for the next step.' : 'What needs to get done?' }}}</p></div>
+    <button type="button" class="icon-button" title="Close task" aria-label="Close task" [disabled]="saving()" (click)="closeEditor()"><app-icon name="X" /></button>
+  </div>
+  @if (editorLoading()) {<div class="editor-loading" role="status"><app-icon name="LoaderCircle" />Loading task...</div>}
+  <div aria-live="polite">
+    @if (editorError()) {<div class="editor-error" role="alert"><p>{{ editorError() }}</p>
+      @for (entry of fieldErrors() | keyvalue; track entry.key) {<p>{{ entry.value.join(' ') }}</p>}
+      @if (conflict()) {<button type="button" class="secondary" (click)="reloadTask()"><app-icon name="RotateCw" />Reload latest task</button>}
+    </div>}
+  </div>
+  @if (!editorLoading() && !editorLoadFailed()) {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <fieldset [disabled]="saving() || conflict() || (selected() && !selected()!.canEdit)">
+        <label for="task-title">Title</label>
+        <input id="task-title" formControlName="title" placeholder="Task title" maxlength="200" autofocus
+          [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid" aria-describedby="title-error" />
+        <div id="title-error" class="field-error">
+          @if (form.controls.title.touched && form.controls.title.invalid) {<span>A title is required (up to 200 characters).</span>}
+          @for (error of serverErrors('title'); track error) {<span>{{ error }}</span>}
+        </div>
+
+        <label for="task-description">Description <span class="optional">Optional</span></label>
+        <textarea id="task-description" formControlName="description" rows="5" maxlength="4000" placeholder="Add the details that matter" aria-describedby="description-error"></textarea>
+        <div id="description-error" class="field-error">@for (error of serverErrors('description'); track error) {<span>{{ error }}</span>}</div>
+
+        <label for="task-purpose">Project <span class="optional">Optional</span></label>
+        <select id="task-purpose" formControlName="purposeId" aria-describedby="purpose-error">
+          <option value="">No project</option>@for (purpose of purposes(); track purpose.id) {<option [value]="purpose.id">{{ purpose.title }}</option>}
+          @if (selectedPurposeMissing()) {<option [value]="selected()!.purposeId">{{ selected()!.purposeTitle || 'Unavailable project' }}</option>}
+        </select>
+        <div id="purpose-error" class="field-error">@for (error of serverErrors('purposeId'); track error) {<span>{{ error }}</span>}</div>
+
+        <div class="form-grid">
+          <div><label for="task-status">Status</label><select id="task-status" formControlName="status">@for (status of statuses; track status) {<option [value]="status">{{ statusLabel(status) }}</option>}</select>
+            <div class="field-error">@for (error of serverErrors('status'); track error) {<span>{{ error }}</span>}</div></div>
+          <div><label for="task-priority">Priority</label><select id="task-priority" formControlName="priority">@for (priority of priorities; track priority) {<option [value]="priority">{{ priority }}</option>}</select>
+            <div class="field-error">@for (error of serverErrors('priority'); track error) {<span>{{ error }}</span>}</div></div>
+          <div><label for="task-start">Start date</label><input id="task-start" type="date" formControlName="startDate" [max]="form.controls.dueDate.value" />
+            <div class="field-error">@for (error of serverErrors('startDate'); track error) {<span>{{ error }}</span>}</div></div>
+          <div><label for="task-due">Due date</label><input id="task-due" type="date" formControlName="dueDate" [min]="form.controls.startDate.value" aria-describedby="date-error" />
+            <div class="field-error">@for (error of serverErrors('dueDate'); track error) {<span>{{ error }}</span>}</div></div>
+        </div>
+        <div id="date-error" class="field-error">@if (form.hasError('dateOrder')) {<span>Due date cannot be before the start date.</span>}</div>
+      </fieldset>
+      @if (selected(); as task) {
+        <dl class="audit"><div><dt>Created</dt><dd>{{ task.createdAt | date: 'medium' }}</dd></div><div><dt>Updated</dt><dd>{{ task.updatedAt | date: 'medium' }}</dd></div>
+          @if (task.completedAt) {<div><dt>Completed</dt><dd>{{ task.completedAt | date: 'medium' }}</dd></div>}
+        </dl>
+      }
+      @if (confirmingDelete()) {
+        <div class="delete-confirm" role="alert"><p>Permanently delete <strong>{{ selected()?.title }}</strong>? This cannot be undone.</p>
+          <div><button type="button" class="secondary" [disabled]="saving()" (click)="confirmingDelete.set(false)">Keep task</button>
+          <button type="button" class="danger" [disabled]="saving() || conflict()" (click)="deleteTask()"><app-icon name="Trash2" />{{ saving() ? 'Deleting...' : 'Delete task' }}</button></div>
+        </div>
+      }
+      <div class="editor-actions">
+        @if (selected()?.isOwner) {<button type="button" class="icon-button delete-button" title="Delete task" aria-label="Delete task" [disabled]="saving() || conflict()" (click)="confirmingDelete.set(true)"><app-icon name="Trash2" /></button>}
+        <button type="button" class="secondary cancel-button" [disabled]="saving()" (click)="closeEditor()">Cancel</button>
+        @if (!selected() || selected()?.canEdit) {<button class="primary" type="submit" [disabled]="saving() || conflict() || confirmingDelete()"><app-icon name="Check" />{{ saving() ? 'Saving...' : selected() ? 'Save changes' : 'Create task' }}</button>}
+      </div>
+    </form>
+    @if (selected(); as task) { @if (task.isOwner && !auth.user()?.isGuest) {<app-task-sharing [taskId]="task.id" />} }
+  }
+</dialog>

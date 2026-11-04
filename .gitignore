@@ -1,0 +1,10 @@
+/artifacts/
+**/.env
+**/.env.*
+**/secrets/
+**/*.pfx
+**/*.key
+**/*.pem
+**/*.bak
+**/*.mdf
+**/*.ldf

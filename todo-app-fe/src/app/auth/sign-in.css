@@ -1,0 +1,21 @@
+:host { display: block; min-height: 100dvh; }
+.auth-header { width: min(1120px, calc(100% - 48px)); margin: auto; min-height: 64px; display: flex; align-items: center; }
+.brand { display: inline-flex; gap: 8px; align-items: center; font-size: 22px; font-weight: 500; text-decoration: none; }
+.auth-main { width: min(380px, calc(100% - 40px)); margin: 64px auto; }
+h1 { font-size: 24px; font-weight: 500; }
+.auth-tabs { display: flex; gap: 24px; margin: 28px 0; border-bottom: 1px solid var(--border); }
+.auth-tabs button { min-height: 44px; padding-inline: 0; border-radius: 0; border-bottom: 2px solid transparent; font-weight: 400; color: var(--muted); }
+.auth-tabs button[aria-pressed="true"] { border-color: var(--text); color: var(--text); }
+fieldset { border: none; padding: 0; margin: 0; min-width: 0; }
+label { display: block; margin-bottom: 8px; }
+input { display: block; width: 100%; min-height: 44px; }
+.password-input { display: flex; align-items: center; gap: 8px; }
+.password-input input { flex: 1; }
+.password-input .icon-button { width: 44px; height: 44px; flex-basis: 44px; }
+.field-error { color: var(--negative); font-size: 12px; margin: 6px 0 20px; }
+.password-requirements { color: var(--muted); }
+.submit { width: 100%; min-height: 44px; margin-top: 4px; }
+.guest-entry { width: 100%; min-height: 44px; margin-top: 16px; }
+.auth-error { margin-bottom: 24px; color: var(--negative); overflow-wrap: anywhere; }
+.auth-error p + p { margin-top: 8px; }
+@media (max-width: 600px) { .auth-header { width: calc(100% - 40px); } .auth-main { margin-top: 40px; } }

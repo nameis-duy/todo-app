@@ -1,0 +1,545 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Verify Todo database model",
+			"type": "shell",
+			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
+			"args": [
+				"ef",
+				"migrations",
+				"has-pending-model-changes",
+				"--project",
+				"src/Todo.Infrastructure",
+				"--startup-project",
+				"src/Todo.Api",
+				"--no-build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/todo-app-be"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			]
+		},
+		{
+			"label": "Generate Purpose migration",
+			"type": "shell",
+			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
+			"args": [
+				"ef",
+				"migrations",
+				"add",
+				"AddPurposes",
+				"--project",
+				"src/Todo.Infrastructure",
+				"--startup-project",
+				"src/Todo.Api",
+				"--output-dir",
+				"Persistence/SqlServerMigrations",
+				"--no-build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/todo-app-be"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			]
+		},
+		{
+			"label": "Start Todo SQL Server",
+			"type": "shell",
+			"command": "podman",
+			"args": [
+				"compose",
+				"-f",
+				"todo-app-be/compose.yaml",
+				"up",
+				"-d"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop Todo SQL Server",
+			"type": "shell",
+			"command": "podman",
+			"args": [
+				"compose",
+				"-f",
+				"todo-app-be/compose.yaml",
+				"down"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Build Todo backend",
+			"type": "shell",
+			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
+			"args": [
+				"build",
+				"todo-app-be/Todo.slnx"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Scaffold Angular frontend",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npx.cmd",
+			"args": [
+				"--yes",
+				"--package",
+				"@angular/cli@latest",
+				"ng",
+				"new",
+				"todo-web",
+				"--directory",
+				"todo-app-fe",
+				"--standalone",
+				"--routing",
+				"--style",
+				"css",
+				"--skip-tests",
+				"--skip-git",
+				"--package-manager",
+				"npm",
+				"--defaults"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build Todo frontend",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-fe",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Serve Todo frontend",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-fe",
+				"start",
+				"--",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"4200"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint Todo app design",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/lint.mjs",
+				"--app",
+				"todo-app-fe/src"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect Todo app design",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/inspect.mjs",
+				"--app",
+				"http://127.0.0.1:4200/",
+				"--out",
+				"todo-app-fe/.taste-skill/inspect"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Serve Todo API",
+			"type": "shell",
+			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
+			"args": [
+				"run",
+				"--project",
+				"todo-app-be/src/Todo.Api",
+				"--launch-profile",
+				"http"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Audit Todo frontend dependencies",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-fe",
+				"audit"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect Todo task editor",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/inspect.mjs",
+				"--app",
+				"http://127.0.0.1:4200/?task=new",
+				"--allow",
+				"covered-text",
+				"--out",
+				"todo-app-fe/.taste-skill/editor"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect SQL Server port",
+			"type": "shell",
+			"command": "podman",
+			"args": [
+				"port",
+				"todo-sqlserver"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Windows SQL connection",
+			"type": "shell",
+			"command": "Test-NetConnection",
+			"args": [
+				"-ComputerName",
+				"127.0.0.1",
+				"-Port",
+				"14333",
+				"-WarningAction",
+				"SilentlyContinue",
+				"|",
+				"Select-Object",
+				"ComputerName,RemotePort,TcpTestSucceeded"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect Todo purpose workspace",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/inspect.mjs",
+				"--app",
+				"http://127.0.0.1:4200/purposes",
+				"--out",
+				"todo-app-fe/.taste-skill/purposes"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate SQL Server Compose YAML",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"exec",
+				"--yes",
+				"--package=js-yaml",
+				"--",
+				"js-yaml",
+				"todo-app-be/compose.yaml"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Serve combined Todo workspace",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-fe",
+				"start",
+				"--",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"4201"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "Inspect merged Todo workspace",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/inspect.mjs",
+				"--app",
+				"http://127.0.0.1:4201/",
+				"--out",
+				"todo-app-fe/.taste-skill/merged"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Inspect merged task editor",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/inspect.mjs",
+				"--app",
+				"http://127.0.0.1:4201/?task=new",
+				"--allow",
+				"covered-text",
+				"--out",
+				"todo-app-fe/.taste-skill/merged-editor"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build Todo backend Release",
+			"type": "shell",
+			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
+			"args": [
+				"build",
+				"todo-app-be/Todo.slnx",
+				"--configuration",
+				"Release"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Inspect combined container bases",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"image",
+				"list",
+				"--format",
+				"{{.Repository}}:{{.Tag}}"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build combined Todo image",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"build",
+				"--platform",
+				"linux/amd64",
+				"-t",
+				"todo-combined:local",
+				"."
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Check Angular asset copier",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				"--check",
+				"deploy/copy-browser.mjs"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Validate container shell syntax",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"run",
+				"--rm",
+				"--entrypoint",
+				"bash",
+				"-v",
+				"${workspaceFolder}/deploy:/check:ro",
+				"node:24.15.0-bookworm-slim",
+				"-n",
+				"/check/entrypoint.sh",
+				"/check/healthcheck.sh",
+				"/check/sql-admin.sh"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Check container smoke script",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				"--check",
+				"deploy/verify-container.mjs"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Build combined Todo Docker format image",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"build",
+				"--format",
+				"docker",
+				"--platform",
+				"linux/amd64",
+				"-t",
+				"todo-combined:local",
+				"."
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Inspect Podman validation resources",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"machine",
+				"list"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Verify combined Todo container",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				"deploy/verify-container.mjs",
+				"todo-combined:local",
+				"C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Start packaged SPA browser check",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"run",
+				"-d",
+				"--rm",
+				"--name",
+				"todo-spa-browser-check",
+				"-p",
+				"127.0.0.1:8081:8080",
+				"--entrypoint",
+				"dotnet",
+				"todo-combined:local",
+				"/app/Todo.Api.dll"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Inspect packaged SPA listener",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"logs",
+				"--tail",
+				"30",
+				"todo-spa-browser-check"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Remove packaged SPA browser check",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\AppData\\Local\\Programs\\Podman\\podman.exe",
+			"args": [
+				"stop",
+				"--time",
+				"15",
+				"todo-spa-browser-check"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Inspect Todo overview",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				".agents/skills/design-taste-frontend/scripts/inspect.mjs",
+				"--app",
+				"http://127.0.0.1:4200/overview",
+				"--out",
+				"todo-app-fe/.taste-skill/overview"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Scaffold Todo mobile Expo",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npx.cmd",
+			"args": [
+				"--yes",
+				"create-expo-app@latest",
+				"todo-app-mobile",
+				"--template",
+				"blank-typescript",
+				"--yes",
+				"--no-agents-md"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Typecheck Todo mobile",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-mobile",
+				"run",
+				"typecheck"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Serve Todo Expo preview",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				"todo-app-mobile/node_modules/expo/bin/cli",
+				"start",
+				"todo-app-mobile",
+				"--web",
+				"--localhost",
+				"--port",
+				"8082"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "Serve Todo mobile",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": ["--prefix", "todo-app-mobile", "start", "--", "--localhost", "--port", "8082"],
+			"isBackground": true
+		},
+		{
+			"label": "Export Todo mobile Android",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": ["--prefix", "todo-app-mobile", "run", "export:android"],
+			"isBackground": false
+		}
+	]
+}

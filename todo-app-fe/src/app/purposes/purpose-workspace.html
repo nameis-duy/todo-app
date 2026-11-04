@@ -1,0 +1,51 @@
+<div class="project-panel" [class.collapsed]="collapsed()">
+<nav class="project-scopes" aria-label="Task scope">
+  <button type="button" [class.active]="!activeId() && !uncategorized()" [attr.aria-pressed]="!activeId() && !uncategorized()" (click)="scopeChange.emit('')"><app-icon name="ListTodo" />All tasks</button>
+  <button type="button" [class.active]="uncategorized()" [attr.aria-pressed]="uncategorized()" (click)="scopeChange.emit('none')"><app-icon name="Circle" />No project</button>
+</nav>
+  <div class="purpose-heading"><h2>Projects @if (page(); as result) {<span>{{ result.totalCount | number }}</span>}</h2>
+    <div class="purpose-actions"><button class="icon-button" type="button" title="Refresh projects" aria-label="Refresh projects" [disabled]="loading()" (click)="load()"><app-icon name="RotateCw" /></button>
+      <button class="icon-button" type="button" title="New project" aria-label="New project" (click)="open()"><app-icon name="Plus" /></button></div></div>
+  <div class="feedback" aria-live="polite">@if (notice()) {<p class="success"><app-icon name="Check" />{{ notice() }}</p>}</div>
+  @if (error()) {
+    <div class="purpose-empty" role="alert"><p>Projects couldn't load. {{ error() }}</p><button class="text-button" type="button" (click)="load()">Try again</button></div>
+  } @else if (!page() && loading()) {<p class="purpose-empty" role="status">Loading projects...</p>}
+  @else if (!page()?.items?.length) {
+    <div class="purpose-empty"><p>No projects yet.</p><button class="text-button" type="button" (click)="open()"><app-icon name="Plus" />New project</button></div>
+  } @else {
+    <section aria-label="Projects" class="purpose-list" [attr.aria-busy]="loading()">
+      @for (purpose of page()!.items; track purpose.id) {
+        <div class="purpose-row" [class.selected]="activeId() === purpose.id">
+          <button type="button" class="purpose-title" [attr.aria-pressed]="activeId() === purpose.id" (click)="scopeChange.emit(purpose.id)">{{ purpose.title }}</button>
+          <button type="button" class="icon-button" [title]="'Edit ' + purpose.title" [attr.aria-label]="'Edit ' + purpose.title" (click)="open(purpose)"><app-icon name="Pencil" /></button>
+          <div class="purpose-progress"><div><span>{{ purpose.completedTasks | number }} / {{ purpose.totalTasks | number }} done</span><span>{{ purpose.completionPercentage | number: '1.0-1' }}%</span></div>
+            <progress max="100" [value]="purpose.completionPercentage" [attr.aria-label]="purpose.title + ' completion'"></progress></div>
+        </div>
+      }
+    </section>
+    @if (pageCount() > 1) {<div class="purpose-pagination"><span>Page {{ page()!.page }} of {{ pageCount() }}</span>
+      <button class="icon-button" type="button" title="Previous projects" aria-label="Previous projects" [disabled]="loading() || page()!.page <= 1" (click)="load(page()!.page - 1)"><app-icon name="ChevronLeft" /></button>
+      <button class="icon-button" type="button" title="Next projects" aria-label="Next projects" [disabled]="loading() || page()!.page * page()!.pageSize >= page()!.totalCount" (click)="load(page()!.page + 1)"><app-icon name="ChevronRight" /></button></div>}
+  }
+</div>
+<dialog #editor class="editor" aria-labelledby="project-editor-title" (cancel)="close($event)">
+  <div class="editor-header"><div><h2 id="project-editor-title">{{ selected() ? 'Edit project' : 'New project' }}</h2></div>
+    <button class="icon-button" type="button" title="Close project" aria-label="Close project" [disabled]="saving()" (click)="close()"><app-icon name="X" /></button></div>
+  @if (editorError()) {<div class="editor-error" role="alert"><p>{{ editorError() }}</p>
+    @for (message of validationMessages(); track message) {<p>{{ message }}</p>}
+    @if (conflict()) {<button class="secondary" type="button" [disabled]="saving()" (click)="reload()"><app-icon name="RotateCw" />Reload latest project</button>}</div>}
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <fieldset [disabled]="saving() || conflict()">
+      <label for="purpose-title">Title</label><input id="purpose-title" formControlName="title" maxlength="200" autofocus aria-describedby="purpose-title-error" [attr.aria-invalid]="form.controls.title.touched && form.controls.title.invalid" />
+      <div id="purpose-title-error" class="field-error">@if (form.controls.title.touched && form.controls.title.invalid) {<span>A title is required (up to 200 characters).</span>}</div>
+      <label for="purpose-description">Description <span class="optional">Optional</span></label><textarea id="purpose-description" formControlName="description" maxlength="4000" rows="4"></textarea>
+    </fieldset>
+    @if (confirmingDelete()) {<div class="delete-confirm" role="alert"><p>Delete <strong>{{ selected()?.title }}</strong>? Its tasks will be kept with no project.</p>
+      <div><button class="secondary" type="button" [disabled]="saving()" (click)="confirmingDelete.set(false)">Keep project</button>
+        <button class="danger" type="button" [disabled]="saving() || conflict()" (click)="deletePurpose()"><app-icon name="Trash2" />{{ saving() ? 'Deleting...' : 'Delete project' }}</button></div></div>}
+    <div class="editor-actions">
+      @if (selected()) {<button class="icon-button delete-button" type="button" title="Delete project" aria-label="Delete project" [disabled]="saving() || conflict()" (click)="confirmingDelete.set(true)"><app-icon name="Trash2" /></button>}
+      <button class="secondary cancel-button" type="button" [disabled]="saving()" (click)="close()">Cancel</button>
+      <button class="primary" type="submit" [disabled]="saving() || conflict() || confirmingDelete()"><app-icon name="Check" />{{ saving() ? 'Saving...' : 'Save project' }}</button></div>
+  </form>
+</dialog>
