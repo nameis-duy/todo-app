@@ -288,6 +288,27 @@ namespace Todo.Infrastructure.Persistence.SqlServerMigrations
                         });
                 });
 
+            modelBuilder.Entity("Todo.Infrastructure.Persistence.OfflineImportReceipt", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("AccountId", "BatchId");
+
+                    b.ToTable("OfflineImportReceipts", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser<System.Guid>", null)
@@ -345,6 +366,15 @@ namespace Todo.Infrastructure.Persistence.SqlServerMigrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Purpose");
+                });
+
+            modelBuilder.Entity("Todo.Infrastructure.Persistence.OfflineImportReceipt", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

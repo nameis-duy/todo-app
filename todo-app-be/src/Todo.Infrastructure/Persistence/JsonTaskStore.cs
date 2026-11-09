@@ -11,7 +11,7 @@ namespace Todo.Infrastructure.Persistence;
 public sealed class FileStorageException(Exception innerException)
     : Exception("The JSON task store could not be accessed.", innerException);
 
-internal sealed record JsonStoreSnapshot(List<TodoTask> Tasks, List<Purpose> Purposes);
+internal sealed record JsonStoreSnapshot(List<TodoTask> Tasks, List<Purpose> Purposes, List<OfflineImportReceipt> Imports);
 
 public sealed class JsonTaskStore(string directory) : IDisposable
 {
@@ -56,6 +56,30 @@ public sealed class JsonTaskStore(string directory) : IDisposable
         }
         if (tasks > 0 || projects > 0) await WriteCoreAsync(snapshot, token);
         return new GuestDataSummary(tasks, projects);
+    }, cancellationToken);
+
+    internal Task<OfflineGuestResult> ImportGuestAsync(OfflineGuestBatch batch, PreparedGuestImport prepared, Guid accountId,
+        DateTimeOffset now, CancellationToken cancellationToken) => WithLockAsync(async token =>
+    {
+        var snapshot = await ReadCoreAsync(token);
+        var receipt = snapshot.Imports.SingleOrDefault(item => item.AccountId == accountId && item.BatchId == batch.BatchId);
+        if (receipt is not null)
+        {
+            if (receipt.PayloadHash != prepared.Hash) throw new GuestImportConflictException();
+            return new OfflineGuestResult(batch.BatchId, batch.Tasks.Count, batch.Purposes.Count);
+        }
+        if (prepared.Tasks.Any(task => snapshot.Tasks.Any(existing => existing.Id == task.Id))
+            || prepared.Purposes.Any(purpose => snapshot.Purposes.Any(existing => existing.Id == purpose.Id)))
+            throw new GuestImportConflictException();
+        var purposes = snapshot.Purposes.Concat(prepared.Purposes).ToDictionary(purpose => purpose.Id);
+        if (prepared.Tasks.Any(task => task.PurposeId.HasValue
+            && (!purposes.TryGetValue(task.PurposeId.Value, out var purpose) || purpose.OwnerId != accountId)))
+            throw new InvalidPurposeException();
+        snapshot.Tasks.AddRange(prepared.Tasks);
+        snapshot.Purposes.AddRange(prepared.Purposes);
+        snapshot.Imports.Add(new() { AccountId = accountId, BatchId = batch.BatchId, PayloadHash = prepared.Hash, CreatedAt = now });
+        await WriteCoreAsync(snapshot, token);
+        return new OfflineGuestResult(batch.BatchId, batch.Tasks.Count, batch.Purposes.Count);
     }, cancellationToken);
 
     public Task CommitAsync(TodoTask task, Guid? originalVersion, bool delete, CancellationToken cancellationToken) =>
@@ -137,7 +161,7 @@ public sealed class JsonTaskStore(string directory) : IDisposable
         }
         catch (FileNotFoundException)
         {
-            var empty = new JsonStoreSnapshot([], []);
+            var empty = new JsonStoreSnapshot([], [], []);
             await WriteCoreAsync(empty, cancellationToken);
             return empty;
         }
@@ -182,7 +206,7 @@ public sealed class JsonTaskStore(string directory) : IDisposable
         }
         if (tasks.Any(task => task.PurposeId.HasValue && !purposes.Any(purpose => purpose.Id == task.PurposeId && purpose.OwnerId == task.OwnerId)))
             throw new InvalidDataException("The task file contains an invalid purpose reference.");
-        return new JsonStoreSnapshot(tasks, purposes);
+        return new JsonStoreSnapshot(tasks, purposes, document.Imports?.ToList() ?? []);
     }
 
     private async Task WriteCoreAsync(JsonStoreSnapshot snapshot, CancellationToken cancellationToken)
@@ -197,7 +221,7 @@ public sealed class JsonTaskStore(string directory) : IDisposable
                     task.Title, task.Description, task.Status, task.Priority, task.StartDate, task.DueDate,
                     task.CompletedAt, task.CreatedAt, task.UpdatedAt, task.Version, task.PurposeId, OwnerId: task.OwnerId)).ToList(),
                     snapshot.Purposes.Select(purpose => new StoredPurpose(purpose.Id, purpose.Title,
-                        purpose.Description, purpose.CreatedAt, purpose.UpdatedAt, purpose.Version, purpose.OwnerId)).ToList());
+                        purpose.Description, purpose.CreatedAt, purpose.UpdatedAt, purpose.Version, purpose.OwnerId)).ToList(), snapshot.Imports);
                 await JsonSerializer.SerializeAsync(stream, document, JsonOptions, cancellationToken);
                 await stream.FlushAsync(cancellationToken);
                 stream.Flush(flushToDisk: true);
@@ -214,7 +238,7 @@ public sealed class JsonTaskStore(string directory) : IDisposable
     public void Dispose() => gate.Dispose();
 
     private sealed record StoredDocument(int SchemaVersion, IReadOnlyList<TaskResponse> Tasks,
-        IReadOnlyList<StoredPurpose>? Purposes = null);
+        IReadOnlyList<StoredPurpose>? Purposes = null, IReadOnlyList<OfflineImportReceipt>? Imports = null);
     private sealed record StoredPurpose(Guid Id, string Title, string? Description,
         DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid Version, Guid? OwnerId = null);
 }

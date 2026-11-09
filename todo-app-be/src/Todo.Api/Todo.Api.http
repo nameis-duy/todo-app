@@ -31,6 +31,20 @@ X-XSRF-TOKEN: {{csrfToken}}
 
 {}
 
+### Import approved offline guest work (registered account; refresh CSRF after login)
+# Repeat this exact batch ID/body after a timeout; change IDs for an independent import.
+# No source or target ownership IDs are submitted. SQL task storage requires OfflineGuestImport migration.
+POST {{baseUrl}}/api/auth/guest-import
+Content-Type: application/json
+X-XSRF-TOKEN: {{csrfToken}}
+
+{
+  "batchId": "f613bf1c-5454-4610-9c2c-b7f9805d0812",
+  "workspaceId": "9e4dc408-10e6-408b-87fe-1bd324ac7d23",
+  "purposes": [{ "id": "b33fb94c-2b42-4901-9c09-c1894197e779", "title": "Offline project", "description": null, "createdAt": "2026-11-09T00:00:00Z", "updatedAt": "2026-11-09T00:00:00Z" }],
+  "tasks": [{ "id": "45d45934-53a5-43a8-9771-82fb3bdc2410", "title": "Offline task", "description": null, "status": "Pending", "priority": "Normal", "startDate": null, "dueDate": null, "completedAt": null, "createdAt": "2026-11-09T00:00:00Z", "updatedAt": "2026-11-09T00:00:00Z", "purposeId": "b33fb94c-2b42-4901-9c09-c1894197e779" }]
+}
+
 ### Register (requires an anonymous CSRF token)
 POST {{baseUrl}}/api/auth/register
 Content-Type: application/json

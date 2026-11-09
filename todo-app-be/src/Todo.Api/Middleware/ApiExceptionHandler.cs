@@ -31,6 +31,8 @@ public sealed class ApiExceptionHandler(IProblemDetailsService problems, ILogger
             InvalidPurposeException => new HttpValidationProblemDetails(new Dictionary<string, string[]>
                 { ["PurposeId"] = ["The selected purpose does not exist. Reload purposes and choose an existing purpose or no purpose."] })
                 { Status = 400, Title = "Request validation failed." },
+            GuestImportConflictException => new ProblemDetails
+                { Status = 409, Title = "Guest import conflicts with existing data.", Detail = "Retry only the original batch without changing its content." },
             TaskConflictException or PurposeConflictException => new ProblemDetails
                 { Status = 409, Title = "The record changed or was deleted.", Detail = "Reload the record before retrying with its latest version." },
             FileStorageException => new ProblemDetails

@@ -53,5 +53,11 @@ public sealed class TodoDbContext(DbContextOptions<TodoDbContext> options) : Ide
         share.Property(entity => entity.Storage).HasMaxLength(8);
         share.HasIndex(entity => new { entity.UserId, entity.Storage });
         share.HasOne<IdentityUser<Guid>>().WithMany().HasForeignKey(entity => entity.UserId).OnDelete(DeleteBehavior.Cascade);
+
+        var receipt = modelBuilder.Entity<OfflineImportReceipt>();
+        receipt.ToTable("OfflineImportReceipts");
+        receipt.HasKey(entity => new { entity.AccountId, entity.BatchId });
+        receipt.Property(entity => entity.PayloadHash).HasMaxLength(64).IsRequired();
+        receipt.HasOne<IdentityUser<Guid>>().WithMany().HasForeignKey(entity => entity.AccountId).OnDelete(DeleteBehavior.Cascade);
     }
 }

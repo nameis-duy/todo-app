@@ -9,7 +9,7 @@ Native cookie-session clients can initialize CSRF with `GET /api/auth/csrf-token
 It returns `{ "requestToken": "..." }`, sets the existing antiforgery cookie and
 disables caching. Send `X-XSRF-TOKEN` plus session cookies for unsafe requests and
 fetch a new token after changing identity. The Angular `/api/auth/csrf` endpoint
-is unchanged. No schema migration is required for the mobile client.
+is unchanged. Offline mobile imports add the `OfflineGuestImport` migration for SQL task storage.
 
 ## Implemented
 
@@ -24,6 +24,7 @@ is unchanged. No schema migration is required for the mobile client.
   sign-in throttling, and account lockout.
 - Private tasks/projects, plus owner-managed task sharing with registered accounts by email.
 - Private server-backed guest sessions with explicit, additive sync after account sign-in.
+- Authenticated import of offline mobile guest batches with atomic, durable retry receipts.
 
 Single-container Docker/Azure deployment is documented in
 [the deployment runbook](../deploy/README.md).
@@ -186,6 +187,41 @@ removes them; automatic retention cleanup and cross-device guest recovery are no
 implemented. Use non-sensitive local data and define retention before production.
 No additional migration is needed beyond the existing account/sharing migration.
 
+## Offline mobile guest imports
+
+The mobile app can keep guest tasks and purposes entirely on the device. It does
+not create an Identity guest until a legacy server-guest flow explicitly requests
+one. Login/registration and importing still require the API and SQL Identity.
+
+`POST /api/auth/guest-import` requires a registered cookie session and CSRF token.
+Each immutable batch supplies `batchId`, `workspaceId`, and at most 50 tasks and
+purposes in total, within a 512 KiB body. Ownership is always the authenticated
+actor. Account/workspace-scoped server IDs preserve purpose links without accepting
+ownership claims or overwriting existing account records. Creation/completion
+timestamps survive; update timestamps and concurrency versions are refreshed.
+
+SQL commits records and `OfflineImportReceipts` in one serializable transaction.
+JSON commits its additive `imports` receipt collection with tasks/purposes in the
+same locked atomic replacement; schema-version 1 files remain backward compatible.
+Repeating an identical batch returns the same acknowledgement even if its records
+were subsequently edited/deleted. Changing a batch's content or colliding with an
+existing record returns 409. Do not purge receipts independently of retry policy.
+Do not switch storage providers while device imports are pending; receipts and
+purpose references belong to the active provider, not a cross-provider merge.
+
+Apply the additive migration explicitly before using SQL imports, with your
+existing administrator connection configured outside source control:
+
+```powershell
+# From todo-app-be; never put the connection string or its password in this file.
+dotnet ef database update --project src/Todo.Infrastructure --startup-project src/Todo.Api --connection "$env:TODO_MIGRATION_CONNECTION"
+```
+
+Nothing applies database migrations automatically. The Angular server-guest flow
+and its eight-hour recovery cookie remain unchanged. See the mobile README for
+device persistence, consent, retry and offline limitations. Manual request examples
+are in `src/Todo.Api/Todo.Api.http`; automated tests remain deferred.
+
 ## Accounts and permissions
 
 The combined Angular workspace uses **Project** in the UI; `/api/purposes` remains
@@ -272,6 +308,7 @@ dotnet ef migrations add <MigrationName> --project src/Todo.Infrastructure --sta
 | POST | `/api/auth/login` | Sign in and start a cookie session |
 | POST | `/api/auth/guest` | Start/resume a private guest cookie session |
 | POST | `/api/auth/guest-sync` | Explicitly transfer this browser's guest data to a registered account |
+| POST | `/api/auth/guest-import` | Import an approved offline batch with account-scoped retry protection |
 | GET | `/api/auth/me` | Current account or guest, including pending guest-data metadata |
 | POST | `/api/auth/logout` | End the current browser session |
 | GET | `/api/tasks` | Search/filter/sort/page |

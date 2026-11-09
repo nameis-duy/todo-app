@@ -11,4 +11,5 @@ public interface IGuestData
 {
     Task<GuestDataSummary> SummaryAsync(Guid guestId, CancellationToken cancellationToken);
     Task<GuestDataSummary> MergeAsync(Guid guestId, Guid accountId, CancellationToken cancellationToken);
+    Task<OfflineGuestResult> ImportAsync(OfflineGuestBatch batch, Guid accountId, CancellationToken cancellationToken);
 }

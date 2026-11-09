@@ -47,6 +47,13 @@ public static class AuthEndpoints
             .WithSummary("Explicitly merge this browser's guest tasks and projects into the current account.")
             .ProducesProblem(400).ProducesProblem(401).ProducesProblem(403).ProducesProblem(503);
 
+        auth.MapPost("/guest-import", async (OfflineGuestBatch batch, ICurrentUser currentUser, IGuestData data,
+            CancellationToken cancellationToken) => TypedResults.Ok(await data.ImportAsync(batch, currentUser.Id, cancellationToken)))
+            .RequireAuthorization("registered-account")
+            .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(512 * 1024))
+            .WithSummary("Import an explicitly approved offline guest batch; repeat the same batch ID and content to retry safely.")
+            .ProducesValidationProblem().ProducesProblem(401).ProducesProblem(403).ProducesProblem(409).ProducesProblem(413).ProducesProblem(503);
+
         auth.MapPost("/register", async Task<Results<Created<AccountResponse>, ValidationProblem>> (
             CredentialsRequest request, UserManager<IdentityUser<Guid>> users, SignInManager<IdentityUser<Guid>> signIn,
             HttpContext context, GuestSession guests, CancellationToken cancellationToken) =>

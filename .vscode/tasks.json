@@ -47,6 +47,14 @@
 			]
 		},
 		{
+			"label": "Generate offline guest import migration",
+			"type": "shell",
+			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
+			"args": ["ef", "migrations", "add", "OfflineGuestImport", "--project", "src/Todo.Infrastructure", "--startup-project", "src/Todo.Api", "--output-dir", "Persistence/SqlServerMigrations", "--configuration", "Release", "--no-build"],
+			"options": { "cwd": "${workspaceFolder}/todo-app-be" },
+			"problemMatcher": ["$msCompile"]
+		},
+		{
 			"label": "Start Todo SQL Server",
 			"type": "shell",
 			"command": "podman",
