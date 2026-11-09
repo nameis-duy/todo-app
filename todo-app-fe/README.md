@@ -157,8 +157,13 @@ lint configuration exists; the lint command above checks the design skill rules.
 The web theme mirrors the mobile palette in `todo-app-mobile/constants/theme.ts`.
 Shared web tokens live in `src/styles.css`: indigo actions, semantic status colors,
 8px controls, and the same Avenir Next/Segoe UI font stack. Light/dark appearance
-follows the system preference through `prefers-color-scheme`; desktop density and
-the combined project/task layout remain web-specific.
+defaults to the system preference. The Appearance selector in the workspace and
+sign-in headers provides System, Light and Dark options, saved per browser origin
+under `todo.appearance` and shared across tabs. System mode follows OS changes;
+explicit Light/Dark choices override them. Storage failures are reported without
+claiming the setting was saved. Desktop density and the combined project/task
+layout remain web-specific. Theme selection uses the CSS `light-dark()` function
+and requires a current browser.
 No external photographs, fictional metrics, or demo datasets are shipped.
 See `.taste-skill/review.md` for the visual review and documented exceptions.
 

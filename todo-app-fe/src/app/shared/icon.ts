@@ -1,13 +1,13 @@
 import { Component, effect, ElementRef, inject, input } from '@angular/core';
 import {
   ArrowDown, ArrowUp, CalendarDays, Check, CheckCheck, ChevronLeft, ChevronRight,
-  Circle, CircleCheck, Clock3, ListTodo, LoaderCircle, Plus, RotateCw, Search,
+  Circle, CircleCheck, Clock3, ListTodo, LoaderCircle, Plus, RotateCw, Search, SunMoon,
   SlidersHorizontal, Trash2, X, Target, Pencil, Eye, EyeOff, ArrowRight, LogOut, LogIn, CloudUpload, Share2, UserPlus, createElement,
 } from 'lucide';
 
 const icons = {
   ArrowDown, ArrowUp, CalendarDays, Check, CheckCheck, ChevronLeft, ChevronRight,
-  Circle, CircleCheck, Clock3, ListTodo, LoaderCircle, Plus, RotateCw, Search,
+  Circle, CircleCheck, Clock3, ListTodo, LoaderCircle, Plus, RotateCw, Search, SunMoon,
   SlidersHorizontal, Trash2, X, Target, Pencil, Eye, EyeOff, ArrowRight, LogOut, LogIn, CloudUpload, Share2, UserPlus,
 };
 

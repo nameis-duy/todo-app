@@ -1,5 +1,5 @@
 :host { display: block; min-height: 100dvh; }
-.auth-header { width: min(1120px, calc(100% - 48px)); margin: auto; min-height: 64px; display: flex; align-items: center; }
+.auth-header { width: min(1120px, calc(100% - 48px)); margin: auto; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { display: inline-flex; gap: 8px; align-items: center; font-size: 22px; font-weight: 500; text-decoration: none; }
 .auth-main { width: min(380px, calc(100% - 40px)); margin: 64px auto; }
 h1 { font-size: 24px; font-weight: 500; }

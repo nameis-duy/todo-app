@@ -3,6 +3,7 @@
   <div class="topbar-inner">
     <a class="brand" href="/" aria-label="Todo home"><app-icon name="CheckCheck" />Todo<span class="brand-period">.</span></a>
     <span class="workspace-name">{{ auth.user()?.isGuest ? 'Guest workspace' : 'Personal workspace' }}</span>
+    <app-appearance />
     <span class="today">{{ store.updatedAt() | date: 'EEEE, MMM d' }}</span>
     <span class="account-email" [title]="auth.user()?.isGuest ? 'Guest workspace' : auth.user()?.email">{{ auth.user()?.isGuest ? (auth.user()?.isLocalGuest ? 'On this device' : 'Guest') : auth.user()?.email }}</span>
     @if (auth.user()?.isGuest) {<button class="secondary" type="button" (click)="signIn()"><app-icon name="LogIn" />Sign in</button>}

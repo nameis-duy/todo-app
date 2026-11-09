@@ -4,16 +4,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Icon } from '../shared/icon';
+import { Appearance } from '../shared/appearance';
 import { ApiProblem } from '../tasks/task.models';
 import { problemMessage } from '../tasks/task-store';
 import { AuthService } from './auth-service';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [ReactiveFormsModule, Icon],
+  imports: [ReactiveFormsModule, Icon, Appearance],
   styleUrl: './sign-in.css',
   template: `
-    <header class="auth-header"><a class="brand" href="/" aria-label="Todo home"><app-icon name="CheckCheck" />Todo.</a></header>
+    <header class="auth-header"><a class="brand" href="/" aria-label="Todo home"><app-icon name="CheckCheck" />Todo.</a><app-appearance /></header>
     <main class="auth-main">
       <div class="auth-title"><h1>{{ registering() ? 'Create your account' : 'Sign in to Todo' }}</h1></div>
       <div class="auth-tabs" role="group" aria-label="Account action">

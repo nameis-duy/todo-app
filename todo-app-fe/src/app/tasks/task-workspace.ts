@@ -10,6 +10,7 @@ import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap,
 import { Purpose, PurposeApi } from '../purposes/purpose-api';
 import { PurposeWorkspace } from '../purposes/purpose-workspace';
 import { Icon } from '../shared/icon';
+import { Appearance } from '../shared/appearance';
 import { TaskApi } from './task-api';
 import { ApiProblem, SaveTask, TaskPriority, TaskQuery, TaskSort, TaskStatus, TodoTask } from './task.models';
 import { problemMessage, TaskStore } from './task-store';
@@ -18,7 +19,7 @@ import { TaskSharing } from './task-sharing';
 
 @Component({
   selector: 'app-task-workspace',
-  imports: [DatePipe, DecimalPipe, KeyValuePipe, ReactiveFormsModule, Icon, PurposeWorkspace, TaskSharing],
+  imports: [DatePipe, DecimalPipe, KeyValuePipe, ReactiveFormsModule, Icon, Appearance, PurposeWorkspace, TaskSharing],
   providers: [TaskStore],
   templateUrl: './task-workspace.html',
   styleUrls: ['./task-workspace.css', './task-list.css', './task-editor.css', './task-projects.css'],
