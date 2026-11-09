@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, expand, map, reduce } from 'rxjs';
 import { API_BASE_URL } from '../api.config';
+import { LocalGuestStore } from '../auth/local-guest-store';
 
 export interface Purpose {
   id: string;
@@ -27,10 +28,12 @@ export interface SavePurpose { title: string; description: string | null; versio
 @Injectable({ providedIn: 'root' })
 export class PurposeApi {
   private readonly http = inject(HttpClient);
+  private readonly guest = inject(LocalGuestStore);
   private readonly url = `${inject(API_BASE_URL)}/purposes`;
 
   list(page = 1, pageSize = 20) {
-    return this.http.get<PurposePage>(this.url, { params: { page, pageSize } });
+    return this.guest.route(() => this.guest.listPurposes(page, pageSize),
+      () => this.http.get<PurposePage>(this.url, { params: { page, pageSize } }));
   }
 
   all() {
@@ -41,10 +44,17 @@ export class PurposeApi {
     );
   }
 
-  get(id: string) { return this.http.get<Purpose>(`${this.url}/${encodeURIComponent(id)}`); }
-  create(request: SavePurpose) { return this.http.post<Purpose>(this.url, request); }
-  update(id: string, request: SavePurpose) { return this.http.put<Purpose>(`${this.url}/${encodeURIComponent(id)}`, request); }
+  get(id: string) {
+    return this.guest.route(() => this.guest.getPurpose(id), () => this.http.get<Purpose>(`${this.url}/${encodeURIComponent(id)}`));
+  }
+  create(request: SavePurpose) {
+    return this.guest.route(() => this.guest.createPurpose(request), () => this.http.post<Purpose>(this.url, request));
+  }
+  update(id: string, request: SavePurpose) {
+    return this.guest.route(() => this.guest.updatePurpose(id, request), () => this.http.put<Purpose>(`${this.url}/${encodeURIComponent(id)}`, request));
+  }
   delete(purpose: Purpose) {
-    return this.http.delete<void>(`${this.url}/${encodeURIComponent(purpose.id)}`, { params: { version: purpose.version } });
+    return this.guest.route(() => this.guest.deletePurpose(purpose),
+      () => this.http.delete<void>(`${this.url}/${encodeURIComponent(purpose.id)}`, { params: { version: purpose.version } }));
   }
 }

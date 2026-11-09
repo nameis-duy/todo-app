@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, catchError, of, switchMap } from 'rxjs';
 import { TaskApi } from './task-api';
 import { TaskPage, TaskQuery } from './task.models';
+import { GuestStorageError } from '../auth/local-guest-store';
 
 export const initialQuery: TaskQuery = {
   search: '', status: '', priority: '', dueFrom: '', dueTo: '',
@@ -12,6 +13,7 @@ export const initialQuery: TaskQuery = {
 };
 
 export function problemMessage(error: unknown): string {
+  if (error instanceof GuestStorageError) return error.message;
   if (!(error instanceof HttpErrorResponse)) return 'Something went wrong. Please try again.';
   switch (error.status) {
     case 0: return 'Cannot reach the API. Check your connection and try again.';

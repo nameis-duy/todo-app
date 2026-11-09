@@ -187,9 +187,9 @@ removes them; automatic retention cleanup and cross-device guest recovery are no
 implemented. Use non-sensitive local data and define retention before production.
 No additional migration is needed beyond the existing account/sharing migration.
 
-## Offline mobile guest imports
+## Offline guest imports
 
-The mobile app can keep guest tasks and purposes entirely on the device. It does
+The Angular and mobile apps can keep guest tasks and purposes entirely on the device. They do
 not create an Identity guest until a legacy server-guest flow explicitly requests
 one. Login/registration and importing still require the API and SQL Identity.
 
@@ -217,9 +217,9 @@ existing administrator connection configured outside source control:
 dotnet ef database update --project src/Todo.Infrastructure --startup-project src/Todo.Api --connection "$env:TODO_MIGRATION_CONNECTION"
 ```
 
-Nothing applies database migrations automatically. The Angular server-guest flow
-and its eight-hour recovery cookie remain unchanged. See the mobile README for
-device persistence, consent, retry and offline limitations. Manual request examples
+Nothing applies database migrations automatically. New Angular guests now use browser
+storage; legacy server guests and their eight-hour recovery cookie remain supported.
+See the frontend and mobile READMEs for device persistence, consent, retry and offline limitations. Manual request examples
 are in `src/Todo.Api/Todo.Api.http`; automated tests remain deferred.
 
 ## Accounts and permissions

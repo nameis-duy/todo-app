@@ -4,7 +4,7 @@
     <a class="brand" href="/" aria-label="Todo home"><app-icon name="CheckCheck" />Todo<span class="brand-period">.</span></a>
     <span class="workspace-name">{{ auth.user()?.isGuest ? 'Guest workspace' : 'Personal workspace' }}</span>
     <span class="today">{{ store.updatedAt() | date: 'EEEE, MMM d' }}</span>
-    <span class="account-email" [title]="auth.user()?.isGuest ? 'Guest session' : auth.user()?.email">{{ auth.user()?.isGuest ? 'Guest' : auth.user()?.email }}</span>
+    <span class="account-email" [title]="auth.user()?.isGuest ? 'Guest workspace' : auth.user()?.email">{{ auth.user()?.isGuest ? (auth.user()?.isLocalGuest ? 'On this device' : 'Guest') : auth.user()?.email }}</span>
     @if (auth.user()?.isGuest) {<button class="secondary" type="button" (click)="signIn()"><app-icon name="LogIn" />Sign in</button>}
     @if (auth.user()?.hasGuestData && !guestSyncPrompt()) {<button class="icon-button" type="button" title="Sync guest data" aria-label="Sync guest data" (click)="guestSyncPrompt.set(true)"><app-icon name="CloudUpload" /></button>}
     <button class="icon-button" type="button" [title]="auth.user()?.isGuest ? 'Leave guest session' : 'Sign out'" [attr.aria-label]="auth.user()?.isGuest ? 'Leave guest session' : 'Sign out'" [disabled]="signingOut() || guestSyncing()" (click)="logout()"><app-icon name="LogOut" /></button>
@@ -17,6 +17,7 @@
     <div id="project-navigation"><app-purpose-workspace [activeId]="store.query().purposeId" [uncategorized]="store.query().uncategorized" [collapsed]="!projectsOpen()" (scopeChange)="setPurposeFilter($event)" (changed)="projectsChanged($event)" /></div>
   </aside>
   <section id="tasks" class="task-content" aria-label="Task workspace">
+  @if (auth.localWarning()) {<p class="error" role="alert">{{ auth.localWarning() }}</p>}
   @if (auth.user()?.hasGuestData && !auth.user()?.isGuest && guestSyncPrompt()) {
     <section class="guest-sync-prompt" aria-label="Pending guest data" [attr.aria-busy]="guestSyncing()">
       <p>Add your guest tasks and projects to this account?</p>
