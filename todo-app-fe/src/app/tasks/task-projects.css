@@ -5,7 +5,7 @@
 .project-toggle { display: none; }
 .purpose-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block: -16px 24px; font-size: 12px; color: var(--muted); }
 .purpose-summary progress { width: 120px; height: 6px; border: none; border-radius: 4px; overflow: hidden; accent-color: var(--positive); }
-.purpose-summary progress::-webkit-progress-bar { background: var(--border); }
+.purpose-summary progress::-webkit-progress-bar { background: var(--track); }
 .purpose-summary progress::-webkit-progress-value { background: var(--positive); }
 .purpose-summary progress::-moz-progress-bar { background: var(--positive); }
 .purpose-summary strong { font-weight: 500; }

@@ -154,8 +154,11 @@ The editor inspection task allows `covered-text` because a native modal
 intentionally makes its background inert and covers it. No application-level
 lint configuration exists; the lint command above checks the design skill rules.
 
-Design: Achromatic Ledger, seed `1289257485`, no redraws. A cool neutral ground,
-self-hosted Geist, and deadline/status marks give the personal queue its face.
+The web theme mirrors the mobile palette in `todo-app-mobile/constants/theme.ts`.
+Shared web tokens live in `src/styles.css`: indigo actions, semantic status colors,
+8px controls, and the same Avenir Next/Segoe UI font stack. Light/dark appearance
+follows the system preference through `prefers-color-scheme`; desktop density and
+the combined project/task layout remain web-specific.
 No external photographs, fictional metrics, or demo datasets are shipped.
 See `.taste-skill/review.md` for the visual review and documented exceptions.
 

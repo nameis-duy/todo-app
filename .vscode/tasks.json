@@ -50,9 +50,27 @@
 			"label": "Generate offline guest import migration",
 			"type": "shell",
 			"command": "C:\\Program Files\\dotnet\\dotnet.exe",
-			"args": ["ef", "migrations", "add", "OfflineGuestImport", "--project", "src/Todo.Infrastructure", "--startup-project", "src/Todo.Api", "--output-dir", "Persistence/SqlServerMigrations", "--configuration", "Release", "--no-build"],
-			"options": { "cwd": "${workspaceFolder}/todo-app-be" },
-			"problemMatcher": ["$msCompile"]
+			"args": [
+				"ef",
+				"migrations",
+				"add",
+				"OfflineGuestImport",
+				"--project",
+				"src/Todo.Infrastructure",
+				"--startup-project",
+				"src/Todo.Api",
+				"--output-dir",
+				"Persistence/SqlServerMigrations",
+				"--configuration",
+				"Release",
+				"--no-build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/todo-app-be"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			]
 		},
 		{
 			"label": "Start Todo SQL Server",
@@ -539,14 +557,112 @@
 			"label": "Serve Todo mobile",
 			"type": "shell",
 			"command": "C:\\Program Files\\nodejs\\npm.cmd",
-			"args": ["--prefix", "todo-app-mobile", "start", "--", "--localhost", "--port", "8082"],
+			"args": [
+				"--prefix",
+				"todo-app-mobile",
+				"start",
+				"--",
+				"--localhost",
+				"--port",
+				"8082"
+			],
 			"isBackground": true
 		},
 		{
 			"label": "Export Todo mobile Android",
 			"type": "shell",
 			"command": "C:\\Program Files\\nodejs\\npm.cmd",
-			"args": ["--prefix", "todo-app-mobile", "run", "export:android"],
+			"args": [
+				"--prefix",
+				"todo-app-mobile",
+				"run",
+				"export:android"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Install Todo native appearance support",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-mobile",
+				"install",
+				"expo-system-ui@~58.0.7"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Export Todo Android with fresh Metro cache",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				"todo-app-mobile/node_modules/expo/bin/cli",
+				"export",
+				"todo-app-mobile",
+				"--platform",
+				"android",
+				"--clear"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Export Todo Android clean",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-mobile",
+				"run",
+				"export:android",
+				"--",
+				"--clear"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Serve themed Todo Expo preview",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\node.exe",
+			"args": [
+				"todo-app-mobile/node_modules/expo/bin/cli",
+				"start",
+				"todo-app-mobile",
+				"--web",
+				"--localhost",
+				"--port",
+				"8083",
+				"--clear"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "Inspect themed Todo mobile design",
+			"type": "shell",
+			"command": "C:\\Users\\duy.phan\\OneDrive - Orient\\Desktop\\Projects\\todo-app\\todo-app-mobile\\skills\\impeccable\\scripts\\impeccable.cmd",
+			"args": [
+				"detect",
+				"--json",
+				"todo-app-mobile/app",
+				"todo-app-mobile/components",
+				"todo-app-mobile/hooks/theme.tsx",
+				"todo-app-mobile/constants/theme.ts"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Export themed Todo Android single worker",
+			"type": "shell",
+			"command": "C:\\Program Files\\nodejs\\npm.cmd",
+			"args": [
+				"--prefix",
+				"todo-app-mobile",
+				"run",
+				"export:android",
+				"--",
+				"--max-workers",
+				"1"
+			],
 			"isBackground": false
 		}
 	]

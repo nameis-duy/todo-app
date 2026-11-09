@@ -1,27 +1,33 @@
-@import '@fontsource-variable/geist';
-
 :root {
 	color-scheme: light;
-	--font: 'Geist Variable', sans-serif;
-	--ground: #f4f7f7;
+	--font: 'Avenir Next', 'Segoe UI', sans-serif;
+	--ground: #f8fafc;
 	--surface: #ffffff;
-	--raised: #e9efee;
-	--border: #dce5e3;
-	--rule: #edf2f0;
-	--control: #7e908e;
-	--text: #243532;
-	--muted: #586967;
-	--primary: #0f766e;
-	--primary-hover: #115e59;
-	--accent: #0f766e;
-	--accent-soft: #e6f4f0;
-	--selection: #bce7dd;
-	--info: #2864c5;
-	--warning: #995b0b;
-	--positive: #287044;
-	--negative: #b83146;
-	--negative-bg: #fff1f1;
-	--radius: 6px;
+	--raised: #f1f4f9;
+	--border: #dfe5ef;
+	--text: #1e293b;
+	--muted: #59677a;
+	--primary: #4f46e5;
+	--on-primary: #ffffff;
+	--accent-soft: #eeedff;
+	--info: #7756b8;
+	--info-bg: #f3eefc;
+	--highlight: #d34163;
+	--warning: #8c5d00;
+	--warning-bg: #fff5dc;
+	--positive: #16734a;
+	--positive-bg: #eaf8f0;
+	--negative: #b5294b;
+	--negative-bg: #fff0f3;
+	--track: #e7eaf2;
+	--overlay: #0f172a80;
+	--focus: #7c77f5;
+	--rule: var(--border);
+	--control: color-mix(in srgb, var(--muted) 75%, var(--border));
+	--primary-hover: color-mix(in srgb, var(--primary) 88%, var(--text));
+	--accent: var(--primary);
+	--selection: var(--accent-soft);
+	--radius: 8px;
 	--gap: 12px;
 	font-family: var(--font);
 	font-size: 14px;
@@ -33,6 +39,33 @@
 	scrollbar-color: var(--control) var(--ground);
 }
 
+@media (prefers-color-scheme: dark) {
+	:root {
+		color-scheme: dark;
+		--ground: #0f172a;
+		--surface: #1e293b;
+		--raised: #273449;
+		--border: #3b4b62;
+		--text: #f8fafc;
+		--muted: #adbacd;
+		--primary: #a5adff;
+		--on-primary: #141c36;
+		--accent-soft: #303858;
+		--info: #d1beff;
+		--info-bg: #39304e;
+		--highlight: #fb8fa3;
+		--warning: #fcd077;
+		--warning-bg: #403722;
+		--positive: #81dead;
+		--positive-bg: #203e36;
+		--negative: #ff9cb1;
+		--negative-bg: #462b3b;
+		--track: #3b4760;
+		--overlay: #030712b3;
+		--focus: #b3baff;
+	}
+}
+
 *, *::before, *::after { box-sizing: border-box; letter-spacing: 0; }
 ::selection { background: var(--selection); color: var(--text); }
 body { margin: 0; min-width: 320px; line-height: 1.5; }
@@ -42,7 +75,7 @@ button { display: inline-flex; justify-content: center; align-items: center; gap
 button:active:not(:disabled) { transform: translateY(1px); }
 button:disabled { cursor: not-allowed; color: var(--muted); background: var(--raised); }
 button:hover:not(:disabled) { background: var(--raised); }
-button.primary { background: var(--primary); color: var(--surface); }
+button.primary { background: var(--primary); color: var(--on-primary); }
 button.primary:hover:not(:disabled) { background: var(--primary-hover); }
 button.primary:disabled { background: var(--raised); color: var(--muted); }
 button.secondary { background: var(--surface); border: 1px solid var(--control); }
@@ -55,7 +88,7 @@ input, textarea { caret-color: var(--accent); }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 textarea { resize: vertical; }
 a { color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 h1, h2, h3, p { margin: 0; }
 app-icon { display: inline-flex; width: 18px; height: 18px; flex: 0 0 18px; align-items: center; justify-content: center; }
 app-icon svg { display: block; }
