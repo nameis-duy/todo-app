@@ -15,7 +15,8 @@ this personal-workspace focus; a team-first product is not an established goal.
 ## Product Purpose
 
 Help people capture tasks quickly, identify a clear next action, and organize
-personal and work projects. Sharing and collaboration are also confirmed product
+personal and work projects. A Project groups related tasks and shows their
+completion progress. Sharing and collaboration are also confirmed product
 priorities. Success means making everyday task management straightforward
 without losing context about the work or who can access it.
 
@@ -33,8 +34,11 @@ the workspace root. Local frontend development uses a same-origin API proxy.
 ## Capabilities and Constraints
 
 - Preserve the existing Angular/.NET stack and working task/project workflows.
-- Use Projects in user-facing terminology. Internal Purpose contracts are not
-  a reason to rename stored data or change public API behavior.
+- Use Project/Projects consistently across web and mobile titles, navigation,
+  forms, filters, confirmation dialogs, sync messages, and product descriptions.
+  Use No project for tasks without a project. Purpose/Purposes are internal
+  entity and API names only, not product labels. Do not rename stored data,
+  routes, or public API contracts solely to change presentation terminology.
 - Use real API data. Do not invent tasks, totals, progress, or success feedback
   when the server is unavailable.
 - Preserve existing authentication, ownership, access controls, and unsaved-edit
